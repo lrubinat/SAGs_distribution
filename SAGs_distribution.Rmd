@@ -55,50 +55,31 @@ swarms_abund<-tara_sples[swarms_abund]
 write.table(swarms_abund, "data_abund_table.txt", sep="\t", row.names=T)
 #data_abund<-fread("data_abund_table.txt")
 
+#otutb of all swarms occurring in one of the samples 
 swarms_otutb <- dcast(swarms_abund, md5sum ~ sample)
 swarms_otutb[is.na(swarms_otutb)] <- 0
-swarms_otutb<-swarms_otutb[,-(which(colSums(swarms_otutb)==0))]
-head(swarms_otutb)
+swarms_otutb[1:5,1:5]
 dim(swarms_otutb)
 
-#temp<-data[taxogroup=="Prasinophyceae Clade 7"]
-#rbind.fill.matrix(lapply(strsplit(temp$lineage,"\\|"),function(X) t(as.matrix(X))))
+#otutables of SAGs in surface samples
+sags_vs_swarms_SRF<-fread("sags_vs_swarms_piconano_SRF.txt")
+colnames(sags_vs_swarms_SRF)<-c("no.","id_classif","md5sum","ident.%","SAG_lth","swm_lth","coverage","abund","rank","taxogroup","algae_group","status")
+sags_vs_swarms_SRF[1:5,]
+dim(sags_vs_swarms_SRF)
+
+sags_otutb_SRF<-merge(swarms_otutb,sags_vs_swarms_SRF, by="md5sum")
+sags_otutb_SRF[1:5,]
+dim(sags_otutb_SRF)
+
+#otutables of SAGs in DCM samples
+sags_vs_swarms_DCM<-fread("sags_vs_swarms_piconano_DCM.txt")
+colnames(sags_vs_swarms_DCM)<-c("no.","id_classif","md5sum","ident.%","SAG_lth","swm_lth","coverage","abund","rank","taxogroup","algae_group","status")
+dim(sags_vs_swarms_DCM)
+
+sags_otutb_DCM<-merge(swarms_otutb,sags_vs_swarms_DCM, by="md5sum")
+sags_otutb_DCM[1:5,]
+dim(sags_otutb_DCM)
 ```
-
-
-
-
-All swarms
-
-```{r fig_all, echo=F}
-temp<-data_abund[,sum(value),by=md5sum]
-setkey(temp,md5sum)
-setkey(output,md5sum)
-temp<-output[temp,allow.cartesian=T]
-temp<-temp[order(V1,decreasing = T)]
-temp[,rank:=1:nrow(temp)]
-temp<-temp[V1>10]
-temp[,SAG:=sapply(identity,function(X) ifelse(is.na(X),"no","yes"))]
-temp<-join(temp, SAGs_classification)
-temp[1:12,]
-
-swarms_groups <- list(
-  "no"="no SAG aligned",
-  "yes"="SAG(s) aligned"
-)
-
-swarms_labeller <- function(variable,value){
-  return(swarms_groups[value])
-}
-
-
-
-
-
-
-
-
-
 
 
 
