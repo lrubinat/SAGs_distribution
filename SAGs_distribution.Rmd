@@ -94,10 +94,21 @@ test.pca<-rda(test_hell,scale=TRUE)
 
 test.pca
 summary(test.pca)
-summary(test.pca, scaling=1)
+head(summary(test.pca, scaling=1))
 
-par(mfrow=c(1,2))
-biplot.rda(test.pca, main="PCA - sc2")
+########
+# comparison of eigenvalues through kaiser-guttam criterion
+
+test_eig <- test.pca$CA$eig
+test_eig[test_eig > mean(test_eig)]
+
+#par(mfrow=c(1,1)) <-- reset par
+barplot(test_eig, main = "Eigenvalues", col="bisque", las=T)
+abline(h=mean(test_eig), col="red") #average eigenvalue
+#legend("topright", "Average eigenvalue", lwd=1, col=2, bty="n")
+
+biplot.rda(test.pca, scaling=1, main="PCA-scaling 1")
+#biplot.rda(test.pca, main="PCA - sc2")
 
 
 
@@ -127,14 +138,14 @@ sags_SRF_hell <- tran(sags_vs_swarms_SRF, "hellinger")
 
 ```{r beta_div1, echo=FALSE}
 #?vegdist
-tb18_tax_occur_ss8522_no_cero.bray<-vegdist(tb18_tax_occur_ss8522_no_cero, method="bray")
-boxplot(tb18_tax_occur_ss8522_no_cero.bray, main="Bray-Curtis dissimilarity matrix")
+#tb18_tax_occur_ss8522_no_cero.bray<-vegdist(tb18_tax_occur_ss8522_no_cero, method="bray")
+#boxplot(tb18_tax_occur_ss8522_no_cero.bray, main="Bray-Curtis dissimilarity matrix")
 
 
 #NMDS
-tb18_tax_occur_ss8522_no_cero.nmds<-monoMDS(tb18_tax_occur_ss8522_no_cero.bray)
-tb18_tax_occur_ss8522_no_cero.nmds
-plot(tb18_tax_occur_ss8522_no_cero.nmds, main="monoMDs method")
+#tb18_tax_occur_ss8522_no_cero.nmds<-monoMDS(tb18_tax_occur_ss8522_no_cero.bray)
+#tb18_tax_occur_ss8522_no_cero.nmds
+#plot(tb18_tax_occur_ss8522_no_cero.nmds, main="monoMDs method")
 ```
 
 
