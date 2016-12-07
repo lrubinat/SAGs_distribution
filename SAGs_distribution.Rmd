@@ -25,6 +25,8 @@ opts_chunk$set(cache=TRUE, autodep=TRUE)
 ```{r libraries, echo=F, message=F}
 library(vegan)
 library(data.table)
+library(analogue)
+library(tidyr)
 ```
 
 
@@ -32,8 +34,9 @@ library(data.table)
 2) Correlation matrix
 3) PCA - eigenvalues examination
 
-
 ```{r samples_selection, cache.lazy=F, echo=F}
+setwd("~/Documents/2Q16/analyses/exploratory_figures/SAGs_distribution/")
+
 #global occurrence of swarms in Tara Oceans, BioMarKs and Tara Arctic.
 swarms_tb<-fread("/home/lrubinat/Documents/2Q16/data/TARA_V9/globaldataset.otu.v20160830")
 head(swarms_tb)
@@ -46,13 +49,13 @@ tara_sples<-tara_sples[fraction%in%c("0.8-5")&depth%in%c("SUR","DCM")&template==
 swarms_abund<-swarms_tb[,.SD,.SDcols=c("md5sum",tara_sples$sample)]
 swarms_abund<-melt(swarms_abund,id.vars="md5sum")
 swarms_abund<-swarms_abund[value>0]
-write.table(swarms_abund, "data_abund_table.txt", sep="\t",row.names=T)
+#write.table(swarms_abund, "data_abund_table.txt", sep="\t",row.names=T)
 
 setkey(swarms_abund,variable)
 setkey(tara_sples,sample)
 swarms_abund<-tara_sples[swarms_abund]
 
-write.table(swarms_abund, "data_abund_table.txt", sep="\t", row.names=T)
+#write.table(swarms_abund, "data_abund_table.txt", sep="\t", row.names=T)
 #data_abund<-fread("data_abund_table.txt")
 
 #otutb of all swarms occurring in one of the samples 
@@ -71,17 +74,55 @@ sags_otutb_SRF<-merge(swarms_otutb,sags_vs_swarms_SRF, by="md5sum")
 sags_otutb_SRF[1:5,]
 dim(sags_otutb_SRF)
 
+test<-sags_otutb_SRF
+row.names(test)<-paste(row.names(test),test$id_classif, sep = "_")
+test[1:5,1:5]
+row.names(test)
+
+###################
+
+test_only_occur<-test[,2:165]
+test_only_occur[1:5,]
+row.names(test_only_occur)<-row.names(test)
+row.names(test_only_occur)
+
+test_hell <- tran(test_only_occur, "hellinger")
+dim(test_hell)
+test_hell[1:5,1:5]
+
+test.pca<-rda(test_hell,scale=TRUE)
+
+test.pca
+summary(test.pca)
+summary(test.pca, scaling=1)
+
+par(mfrow=c(1,2))
+biplot.rda(test.pca, main="PCA - sc2")
+
+
+
+############################
+
 #otutables of SAGs in DCM samples
 sags_vs_swarms_DCM<-fread("sags_vs_swarms_piconano_DCM.txt")
 colnames(sags_vs_swarms_DCM)<-c("no.","id_classif","md5sum","ident.%","SAG_lth","swm_lth","coverage","abund","rank","taxogroup","algae_group","status")
 dim(sags_vs_swarms_DCM)
 
 sags_otutb_DCM<-merge(swarms_otutb,sags_vs_swarms_DCM, by="md5sum")
-sags_otutb_DCM[1:5,]
+dim(sags_otutb_DCM)
+
+row.names(sags_otutb_DCM)<-sags_otutb_DCM[,1]
+sags_otutb_DCM<-sags_otutb_DCM[,-1]
+
+
 dim(sags_otutb_DCM)
 ```
 
 
+```{r pca_srf, echo=FALSE}
+sags_SRF_hell <- tran(sags_vs_swarms_SRF, "hellinger")
+
+```
 
 
 ```{r beta_div1, echo=FALSE}
