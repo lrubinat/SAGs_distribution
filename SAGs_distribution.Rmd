@@ -75,15 +75,13 @@ dim(sags_otutb_SRF)
 
 test<-sags_otutb_SRF
 row.names(test)<-paste(row.names(test),test$id_classif, sep = "_")
-test[1:5,1:5]
+test[1:5,]
 row.names(test)
 
-###################
-#column with no.
-
-tb18_ss8522_tax["OTU_no"] <- NA
-tb18_ss8522_tax$OTU_no <- sapply(strsplit(rownames(tb18_ss8522_tax),split= "\\_"),'[',2)
-tb18_ss8522_tax$OTU_no <- as.numeric(as.character(tb18_ss8522_tax$OTU_no))
+#version with "no." column as row.names
+row.names(test)<-test$no.
+test[1:5,]
+row.names(test)
 
 
 ###################
