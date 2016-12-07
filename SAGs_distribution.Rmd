@@ -19,9 +19,6 @@ opts_chunk$set(cache=TRUE, autodep=TRUE)
 ```
 --->
 
-
-# 1) Abundance overview
-
 ```{r libraries, echo=F, message=F}
 library(vegan)
 library(data.table)
@@ -34,7 +31,9 @@ library(tidyr)
 2) Correlation matrix
 3) PCA - eigenvalues examination
 
-```{r samples_selection, cache.lazy=F, echo=F}
+# 1) SURFACE samples 
+
+```{r samples_selection_SRF, cache.lazy=F, echo=F}
 setwd("~/Documents/2Q16/analyses/exploratory_figures/SAGs_distribution/")
 
 #global occurrence of swarms in Tara Oceans, BioMarKs and Tara Arctic.
@@ -43,7 +42,7 @@ head(swarms_tb)
 
 #selection of Tara samples.
 tara_sples<-fread("sple.csv")
-tara_sples<-tara_sples[fraction%in%c("0.8-5")&depth%in%c("SUR","DCM")&template=="DNA"]
+tara_sples<-tara_sples[fraction%in%c("0.8-5")&depth%in%c("SUR")&template=="DNA"]
 
 #extract swarms that occur in the selected samples
 swarms_abund<-swarms_tb[,.SD,.SDcols=c("md5sum",tara_sples$sample)]
@@ -81,7 +80,7 @@ row.names(test)
 
 ###################
 
-test_only_occur<-test[,2:165]
+test_only_occur<-test[,2:104]
 test_only_occur[1:5,]
 row.names(test_only_occur)<-row.names(test)
 row.names(test_only_occur)
@@ -107,13 +106,23 @@ barplot(test_eig, main = "Eigenvalues", col="bisque", las=T)
 abline(h=mean(test_eig), col="red") #average eigenvalue
 #legend("topright", "Average eigenvalue", lwd=1, col=2, bty="n")
 
-biplot.rda(test.pca, scaling=1, main="PCA-scaling 1")
+biplot.rda(test.pca, scaling=2, main="PCA-scaling 1")
 #biplot.rda(test.pca, main="PCA - sc2")
 
+cleanplot.pca(test.pca, point =TRUE)
+cleanplot.pca(test.pca)
+cleanplot.pca(test.pca, ahead=0)
 
-
+cleanplot_exp(test.pca, point =TRUE)
+cleanplot_exp(test.pca)
+cleanplot_exp(test.pca, ahead=0)
 ############################
 
+```
+
+
+
+```{r samples_selection_DCM, echo=FALSE}
 #otutables of SAGs in DCM samples
 sags_vs_swarms_DCM<-fread("sags_vs_swarms_piconano_DCM.txt")
 colnames(sags_vs_swarms_DCM)<-c("no.","id_classif","md5sum","ident.%","SAG_lth","swm_lth","coverage","abund","rank","taxogroup","algae_group","status")
