@@ -72,81 +72,233 @@ dim(sags_vs_swarms_SRF)
 sags_otutb_SRF<-merge(swarms_otutb,sags_vs_swarms_SRF, by="md5sum")
 sags_otutb_SRF[1:5,]
 dim(sags_otutb_SRF)
-
-test<-sags_otutb_SRF
-row.names(test)<-paste(row.names(test),test$id_classif, sep = "_")
-test[1:5,]
-row.names(test)
-
-#version with "no." column as row.names
-row.names(test)<-test$no.
-test[1:5,]
-row.names(test)
-
-
-###################
-
-test_only_occur<-test[,2:104]
-test_only_occur[1:5,]
-row.names(test_only_occur)<-row.names(test)
-row.names(test_only_occur)
-
-test_hell <- tran(test_only_occur, "hellinger")
-dim(test_hell)
-test_hell[1:5,1:5]
-
-test.pca<-rda(test_hell,scale=TRUE)
-
-test.pca
-summary(test.pca)
-head(summary(test.pca, scaling=1))
-
-########
-# comparison of eigenvalues through kaiser-guttam criterion
-
-test_eig <- test.pca$CA$eig
-test_eig[test_eig > mean(test_eig)]
-
-#par(mfrow=c(1,1)) <-- reset par
-barplot(test_eig, main = "Eigenvalues", col="bisque", las=T)
-abline(h=mean(test_eig), col="red") #average eigenvalue
-#legend("topright", "Average eigenvalue", lwd=1, col=2, bty="n")
-
-biplot.rda(test.pca, scaling=2, main="PCA-scaling 1")
-#biplot.rda(test.pca, main="PCA - sc2")
-
-cleanplot.pca(test.pca, point =TRUE)
-cleanplot.pca(test.pca)
-cleanplot.pca(test.pca, ahead=0)
-
-cleanplot_exp(test.pca, point =TRUE)
-cleanplot_exp(test.pca)
-cleanplot_exp(test.pca, ahead=0)
-############################
-
 ```
 
+
+```{r sags_otutb_SRF_pca}
+sags_otutb_SRF<-sags_otutb_SRF
+row.names(sags_otutb_SRF)<-paste(row.names(sags_otutb_SRF),sags_otutb_SRF$id_classif, sep = "_")
+sags_otutb_SRF[1:5,]
+row.names(sags_otutb_SRF)
+
+#version with "no." column as row.names
+row.names(sags_otutb_SRF)<-sags_otutb_SRF$no.
+sags_otutb_SRF[1:5,]
+row.names(sags_otutb_SRF)
+
+###################
+#select occurrence data
+sags_otutb_SRF_only_occur<-sags_otutb_SRF[,2:104]
+sags_otutb_SRF_only_occur[1:5,]
+row.names(sags_otutb_SRF_only_occur)<-row.names(sags_otutb_SRF)
+row.names(sags_otutb_SRF_only_occur)
+
+
+##################
+sags_otutb_SRF.w<-hclust(dist(scale(sags_otutb_SRF_only_occur)), "ward.D")
+
+gr<-cutree(sags_otutb_SRF.w, k=4)
+gr1<-levels(factor(gr))
+
+sags_otutb_SRF.pca_nohell<-rda(sags_otutb_SRF_only_occur, scale=T)
+
+sit.sc1<-scores(sags_otutb_SRF.pca_nohell,display="wa",scaling=1)
+
+p<-plot(sags_otutb_SRF.pca_nohell, display="wa", scaling=1, type="n", main="PCA correlation + clusters")
+  abline(v=0, lyt="dotted")
+  abline(h=0, lty="dotted")
+  for (i in 1:length(gr1)) {
+    points(sit.sc1[gr==i,], pch=(14+i), cex=2, col=i+1)
+  }
+
+  text(sit.sc1, row.names(temp), cex=.7, pos=3)
+
+ordicluster(p, sags_otutb_SRF.w, col="dark grey")
+legend(locator(1), paste("Group", c(1:length(gr1))),
+       pch=14+c(1:length(gr1)),
+       col=1+c(1:length(gr1)), pt.cex=2)
+  
+##################
+#hellinger - option 1
+
+sags_otutb_SRF.h<-decostand(sags_otutb_SRF_only_occur, "hellinger")
+dim(sags_otutb_SRF.h)
+sags_otutb_SRF.h[1:5,1:5]
+
+sags_otutb_SRF.h.pca<-rda(sags_otutb_SRF.h)
+sags_otutb_SRF.h.pca
+
+summary(sags_otutb_SRF.h.pca)
+head(summary(sags_otutb_SRF.h.pca, scaling=1))
+
+
+##################
+#hellinger - option 2
+sags_otutb_SRF_hell <- tran(sags_otutb_SRF_only_occur, "hellinger")
+#no need to scale it if we work with a standarized matrix (...right?)
+sags_otutb_SRF.pca<-rda(sags_otutb_SRF_hell,scale=TRUE)
+
+
+##################
+# comparison of eigenvalues through kaiser-guttam criterion
+
+sags_otutb_SRF_eig <- sags_otutb_SRF.h.pca$CA$eig
+sags_otutb_SRF_eig[sags_otutb_SRF_eig > mean(sags_otutb_SRF_eig)]
+
+#par(mfrow=c(1,1)) <-- reset par
+barplot(sags_otutb_SRF_eig, main = "Eigenvalues", col="bisque", las=T)
+abline(h=mean(sags_otutb_SRF_eig), col="red") #average eigenvalue
+#legend("topright", "Average eigenvalue", lwd=1, col=2, bty="n")
+
+biplot.rda(sags_otutb_SRF.h.pca, scaling=2, main="PCA-scaling 1")
+#biplot.rda(sags_otutb_SRF.pca, main="PCA - sc2")
+
+source("cleanplot_exp.R")
+
+cleanplot.pca(sags_otutb_SRF.h.pca, point =TRUE)
+cleanplot.pca(sags_otutb_SRF.h.pca)
+cleanplot.pca(sags_otutb_SRF.h.pca, ahead=0)
+
+cleanplot_exp(sags_otutb_SRF.h.pca, point =TRUE)
+cleanplot_exp(sags_otutb_SRF.h.pca)
+cleanplot_exp(sags_otutb_SRF.h.pca, ahead=0)
+```
 
 
 ```{r samples_selection_DCM, echo=FALSE}
-#otutables of SAGs in DCM samples
+setwd("~/Documents/2Q16/analyses/exploratory_figures/SAGs_distribution/")
+
+#global occurrence of swarms in Tara Oceans, BioMarKs and Tara Arctic.
+swarms_tb<-fread("/home/lrubinat/Documents/2Q16/data/TARA_V9/globaldataset.otu.v20160830")
+head(swarms_tb)
+
+#selection of Tara samples.
+tara_sples<-fread("sple.csv")
+tara_sples<-tara_sples[fraction%in%c("0.8-5")&depth%in%c("DCM")&template=="DNA"]
+
+#extract swarms that occur in the selected samples
+swarms_abund<-swarms_tb[,.SD,.SDcols=c("md5sum",tara_sples$sample)]
+swarms_abund<-melt(swarms_abund,id.vars="md5sum")
+swarms_abund<-swarms_abund[value>0]
+#write.table(swarms_abund, "data_abund_table.txt", sep="\t",row.names=T)
+
+setkey(swarms_abund,variable)
+setkey(tara_sples,sample)
+swarms_abund<-tara_sples[swarms_abund]
+
+#write.table(swarms_abund, "data_abund_table.txt", sep="\t", row.names=T)
+#data_abund<-fread("data_abund_table.txt")
+
+#otutb of all swarms occurring in one of the samples 
+swarms_otutb <- dcast(swarms_abund, md5sum ~ sample)
+swarms_otutb[is.na(swarms_otutb)] <- 0
+swarms_otutb[1:5,1:5]
+dim(swarms_otutb)
+
+#otutables of SAGs in surface samples
 sags_vs_swarms_DCM<-fread("sags_vs_swarms_piconano_DCM.txt")
 colnames(sags_vs_swarms_DCM)<-c("no.","id_classif","md5sum","ident.%","SAG_lth","swm_lth","coverage","abund","rank","taxogroup","algae_group","status")
+sags_vs_swarms_DCM[1:5,]
 dim(sags_vs_swarms_DCM)
 
 sags_otutb_DCM<-merge(swarms_otutb,sags_vs_swarms_DCM, by="md5sum")
-dim(sags_otutb_DCM)
-
-row.names(sags_otutb_DCM)<-sags_otutb_DCM[,1]
-sags_otutb_DCM<-sags_otutb_DCM[,-1]
-
-
+sags_otutb_DCM[1:5,]
 dim(sags_otutb_DCM)
 ```
 
 
-```{r pca_srf, echo=FALSE}
-sags_SRF_hell <- tran(sags_vs_swarms_SRF, "hellinger")
+```{r sags_otutb_DCM_pca}
+sags_otutb_DCM<-sags_otutb_DCM
+row.names(sags_otutb_DCM)<-paste(row.names(sags_otutb_DCM),sags_otutb_DCM$id_classif, sep = "_")
+sags_otutb_DCM[1:5,]
+row.names(sags_otutb_DCM)
+
+#version with "no." column as row.names
+row.names(sags_otutb_DCM)<-sags_otutb_DCM$no.
+sags_otutb_DCM[1:5,]
+row.names(sags_otutb_DCM)
+
+###################
+#select occurrence data
+sags_otutb_DCM_only_occur<-sags_otutb_DCM[,2:104]
+sags_otutb_DCM_only_occur[1:5,]
+row.names(sags_otutb_DCM_only_occur)<-row.names(sags_otutb_DCM)
+row.names(sags_otutb_DCM_only_occur)
+
+
+##################
+sags_otutb_DCM.w<-hclust(dist(scale(sags_otutb_DCM_only_occur)), "ward.D")
+
+gr<-cutree(sags_otutb_DCM.w, k=4)
+gr1<-levels(factor(gr))
+
+sags_otutb_DCM.pca_nohell<-rda(sags_otutb_DCM_only_occur, scale=T)
+
+sit.sc1<-scores(sags_otutb_DCM.pca_nohell,display="wa",scaling=1)
+
+p<-plot(sags_otutb_DCM.pca_nohell, display="wa", scaling=1, type="n", main="PCA correlation + clusters")
+  abline(v=0, lyt="dotted")
+  abline(h=0, lty="dotted")
+  for (i in 1:length(gr1)) {
+    points(sit.sc1[gr==i,], pch=(14+i), cex=2, col=i+1)
+  }
+
+  text(sit.sc1, row.names(temp), cex=.7, pos=3)
+
+ordicluster(p, sags_otutb_DCM.w, col="dark grey")
+legend(locator(1), paste("Group", c(1:length(gr1))),
+       pch=14+c(1:length(gr1)),
+       col=1+c(1:length(gr1)), pt.cex=2)
+  
+##################
+#hellinger - option 1
+
+sags_otutb_DCM.h<-decostand(sags_otutb_DCM_only_occur, "hellinger")
+dim(sags_otutb_DCM.h)
+sags_otutb_DCM.h[1:5,1:5]
+
+sags_otutb_DCM.h.pca<-rda(sags_otutb_DCM.h)
+sags_otutb_DCM.h.pca
+
+summary(sags_otutb_DCM.h.pca)
+head(summary(sags_otutb_DCM.h.pca, scaling=1))
+
+
+##################
+#hellinger - option 2
+sags_otutb_DCM_hell <- tran(sags_otutb_DCM_only_occur, "hellinger")
+#no need to scale it if we work with a standarized matrix (...right?)
+sags_otutb_DCM.pca<-rda(sags_otutb_DCM_hell,scale=TRUE)
+
+
+##################
+# comparison of eigenvalues through kaiser-guttam criterion
+
+sags_otutb_DCM_eig <- sags_otutb_DCM.h.pca$CA$eig
+sags_otutb_DCM_eig[sags_otutb_DCM_eig > mean(sags_otutb_DCM_eig)]
+
+#par(mfrow=c(1,1)) <-- reset par
+barplot(sags_otutb_DCM_eig, main = "Eigenvalues", col="bisque", las=T)
+abline(h=mean(sags_otutb_DCM_eig), col="red") #average eigenvalue
+#legend("topright", "Average eigenvalue", lwd=1, col=2, bty="n")
+
+biplot.rda(sags_otutb_DCM.h.pca, scaling=2, main="PCA-scaling 1")
+#biplot.rda(sags_otutb_DCM.pca, main="PCA - sc2")
+
+source("cleanplot_exp.R")
+
+cleanplot.pca(sags_otutb_DCM.h.pca, point =TRUE)
+cleanplot.pca(sags_otutb_DCM.h.pca)
+cleanplot.pca(sags_otutb_DCM.h.pca, ahead=0)
+
+cleanplot_exp(sags_otutb_DCM.h.pca, point =TRUE)
+cleanplot_exp(sags_otutb_DCM.h.pca)
+cleanplot_exp(sags_otutb_DCM.h.pca, ahead=0)
+```
+
+
+```{r pca_DCM, echo=FALSE}
+sags_DCM_hell <- tran(sags_vs_swarms_DCM, "hellinger")
 
 ```
 
