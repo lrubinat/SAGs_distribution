@@ -24,6 +24,7 @@ library(vegan)
 library(data.table)
 library(analogue)
 library(tidyr)
+library(pheatmap)
 ```
 
 
@@ -167,6 +168,52 @@ legend("topright", "Average eigenvalue", lwd=1, col=2, bty="n")
 #biplot.rda(sags_otutb_SRF.pca, main="PCA - sc2")
 
 ```
+
+
+```{r heatmap_SRF, echo=F, results="hide", message=F, warning=F, fig.align="center"}
+
+sags_otutb_SRF<-sags_otutb_SRF
+row.names(sags_otutb_SRF)<-paste(row.names(sags_otutb_SRF),sags_otutb_SRF$id_classif, sep = "_")
+sags_otutb_SRF[1:5,]
+row.names(sags_otutb_SRF)
+
+#select occurrence data
+sags_otutb_SRF_only_occur<-sags_otutb_SRF[,2:104]
+sags_otutb_SRF_only_occur[1:5,]
+row.names(sags_otutb_SRF_only_occur)<-row.names(sags_otutb_SRF)
+
+#normalization
+#norm_sags_otutb_SRF <- sags_otutb_SRF_only_occur
+#norm_sags_otutb_SRF[,order] = t(t(norm_sags_otutb_SRF[,order])/)
+
+# Visualization
+pheatmap(log10(sags_otutb_SRF_only_occur[,order] * 1e5 + 1), cluster_cols=F,
+labels_row=named_norm_df$name)
+
+
+
+#transpose table
+sags_otutb_SRF_only_occur.t<-t(sags_otutb_SRF_only_occur)
+colnames(sags_otutb_SRF_only_occur.t)<-row.names(sags_otutb_SRF_only_occur)
+sags_otutb_SRF_only_occur.t[1:5,1:5]
+
+# Normalization
+norm_df = df
+norm_df[,order] = t(t(norm_df[,order]) / renamed_col_data[order, "ntags"])
+
+# Add SAG names
+names = read.table("~/sag_names.csv", sep=";", header=T, col.names=c("id", "name"))
+named_norm_df = merge(norm_df, names, by="id")
+
+
+
+
+
+
+
+```
+
+
 
 #2) DCM samples
 
