@@ -20,6 +20,7 @@ opts_chunk$set(cache=TRUE, autodep=TRUE)
 --->
 
 ```{r libraries, echo=F, message=F}
+library(permute)
 library(vegan)
 library(data.table)
 library(analogue)
@@ -172,25 +173,39 @@ legend("topright", "Average eigenvalue", lwd=1, col=2, bty="n")
 
 ```{r heatmap_SRF, echo=F, results="hide", message=F, warning=F, fig.align="center"}
 
-sags_otutb_SRF<-sags_otutb_SRF
-row.names(sags_otutb_SRF)<-paste(row.names(sags_otutb_SRF),sags_otutb_SRF$id_classif, sep = "_")
-sags_otutb_SRF[1:5,]
+#sags_otutb_SRF<-sags_otutb_SRF
+#row.names(sags_otutb_SRF)<-paste(row.names(sags_otutb_SRF),sags_otutb_SRF$id_classif, sep = "_")
+#sags_otutb_SRF[1:5,]
 row.names(sags_otutb_SRF)
 
 #select occurrence data
 sags_otutb_SRF_only_occur<-sags_otutb_SRF[,2:104]
-sags_otutb_SRF_only_occur[1:5,]
+sags_otutb_SRF_only_occur[1:15,]
 row.names(sags_otutb_SRF_only_occur)<-row.names(sags_otutb_SRF)
+
+sags_otutb_SRF_only_occur_test<-as.data.frame(sags_otutb_SRF_only_occur)
+sags_otutb_SRF_only_occur_test$total_abund <- rowSums(sags_otutb_SRF_only_occur)
+sags_otutb_SRF_only_occur_test[1:15,]
+write.table(sags_otutb_SRF_only_occur_test, "sags_test.txt", sep="\t", row.names = T)
+
+tb18_ss8522_tax$OTU_no <- as.numeric(as.character(tb18_ss8522_tax$OTU_no))
+tb18_ss8522_tax_sorted<-tb18_ss8522_tax[order(tb18_ss8522_tax$OTU_no, decreasing = FALSE), ]
+
+
 
 #normalization
 #norm_sags_otutb_SRF <- sags_otutb_SRF_only_occur
 #norm_sags_otutb_SRF[,order] = t(t(norm_sags_otutb_SRF[,order])/)
 
 # Visualization
-pheatmap(log10(sags_otutb_SRF_only_occur[,order] * 1e5 + 1), cluster_cols=F,
-labels_row=named_norm_df$name)
+pheatmap(log10(sags_otutb_SRF_only_occur * 1e5 + 1), cluster_cols=T, cluster_rows=T, legend=T,
+labels_row=row.names(sags_otutb_SRF_only_occur))
 
 
+pdf("sag_abund.pdf", 15, 40, onefile=FALSE)
+pheatmap(log10(sags_otutb_SRF_only_occur * 1e5 + 1), cluster_cols=F,
+labels_row=row.names(sags_otutb_SRF_only_occur))
+dev.off()
 
 #transpose table
 sags_otutb_SRF_only_occur.t<-t(sags_otutb_SRF_only_occur)
